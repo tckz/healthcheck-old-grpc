@@ -7,10 +7,10 @@ endif
 DIR_BIN := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))/bin
 DIR_PROTOC := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))/protoc
 
-DIST_HELLOCLIENT=dist/helloclient
+DISTS := $(patsubst cmd/%,dist/%,$(wildcard cmd/*))
 
 TARGETS=\
-	$(DIST_HELLOCLIENT)
+	$(DISTS)
 
 SRCS_OTHER := $(shell find . \
 	-type d -name cmd -prune -o \
@@ -52,6 +52,5 @@ gen: export PATH=$(TMP_PATH)
 gen: $(TOOL_PROTOC) $(TOOL_PROTOC_GEN_GO)
 	$(TOOL_PROTOC) -I. --proto_path=protoc/include --go_out=plugins=grpc:. api/hello.proto
 
-$(DIST_HELLOCLIENT): cmd/helloclient/*.go $(SRCS_OTHER)
-	CGO_ENABLED=0 go build -o $@ ./cmd/helloclient/
-	@echo "$@ done."
+dist/%: ./cmd/%/* $(SRC_OTHER)
+	CGO_ENABLED=0 $(GO_CMD) build -o $@ ./cmd/$*/
